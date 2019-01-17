@@ -255,6 +255,9 @@ class SocketClient(threading.Thread):
                 self.logger.debug("Connected!")
                 break
             except OSError as err:
+                self.socket.close()
+                self.socket = None
+
                 self.connecting = True
                 if self.stop.is_set():
                     self.logger.error(
@@ -268,8 +271,8 @@ class SocketClient(threading.Thread):
 
                 # Only sleep if we have another retry remaining
                 if tries is None or tries > 1:
-                    retry_log_fun("Failed to connect, retrying in %.1fs",
-                                  self.retry_wait)
+                    retry_log_fun("Failed to connect, retrying in %.1fs [%s]",
+                                  self.retry_wait, str(err))
                     retry_log_fun = self.logger.debug
                     time.sleep(self.retry_wait)
 
